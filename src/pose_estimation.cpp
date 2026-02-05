@@ -1,9 +1,9 @@
 #include "pose_estimation.hpp"
+#include "conversion.hpp"
 #include <Eigen/Geometry>
 #include <apriltag/apriltag_pose.h>
 #include <apriltag/common/homography.h>
 #include <opencv2/calib3d.hpp>
-#include <tf2/convert.hpp>
 
 
 geometry_msgs::msg::Transform
@@ -22,7 +22,8 @@ homography(apriltag_detection_t* const detection, const std::array<double, 4>& i
         MATD_EL(pose.R, 2, i) *= -1;
     }
 
-    return tf2::toMsg<apriltag_pose_t, geometry_msgs::msg::Transform>(const_cast<const apriltag_pose_t&>(pose));
+    // Use our custom conversion function instead of tf2::toMsg
+    return apriltag_ros::poseToTransform(pose);
 }
 
 geometry_msgs::msg::Transform
@@ -51,7 +52,8 @@ pnp(apriltag_detection_t* const detection, const std::array<double, 4>& intr, do
     cv::Mat rvec, tvec;
     cv::solvePnP(objectPoints, imagePoints, cameraMatrix, {}, rvec, tvec);
 
-    return tf2::toMsg<std::pair<cv::Mat_<double>, cv::Mat_<double>>, geometry_msgs::msg::Transform>(std::make_pair(tvec, rvec));
+    // Use our custom conversion function instead of tf2::toMsg
+    return apriltag_ros::poseToTransform(std::make_pair(tvec, rvec));
 }
 
 const std::unordered_map<std::string, pose_estimation_f> pose_estimation_methods{
