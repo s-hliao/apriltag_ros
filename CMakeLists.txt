@@ -48,7 +48,13 @@ find_package(image_transport REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(Eigen3 REQUIRED NO_MODULE)
 find_package(Threads REQUIRED)
-find_package(OpenCV REQUIRED COMPONENTS core calib3d)
+set(OpenCV_LIBS
+    /usr/lib/aarch64-linux-gnu/libopencv_core.so.4.2
+    /usr/lib/aarch64-linux-gnu/libopencv_calib3d.so.4.2
+)
+include_directories(
+    /usr/include/opencv4
+)
 find_package(apriltag 3.2 REQUIRED)
 
 # Foxy uses older versions, so we don't add these compile definitions
@@ -74,7 +80,7 @@ add_library(conversion STATIC
 target_link_libraries(conversion
     apriltag::apriltag
     Eigen3::Eigen
-    opencv_core
+    ${OpenCV_LIBS}
     tf2::tf2
 )
 ament_target_dependencies(conversion
@@ -92,7 +98,7 @@ add_library(pose_estimation STATIC
 target_link_libraries(pose_estimation
     apriltag::apriltag
     Eigen3::Eigen
-    opencv_calib3d
+    ${OpenCV_LIBS}
     conversion
     tf2::tf2
 )
@@ -112,6 +118,7 @@ target_link_libraries(AprilTagNode
     apriltag::apriltag
     tags
     pose_estimation
+    ${OpenCV_LIBS}
 )
 ament_target_dependencies(AprilTagNode
     rclcpp
